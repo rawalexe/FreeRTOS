@@ -35,6 +35,8 @@
 #include "FreeRTOS_IP.h"
 #include "FreeRTOS_Sockets.h"
 
+/* Function from freertos_hooks_winsim.c */
+extern UBaseType_t uxRand( void );
 /*-----------------------------------------------------------*/
 
 #if defined( ipconfigIPv4_BACKWARD_COMPATIBLE ) && ( ipconfigIPv4_BACKWARD_COMPATIBLE == 0 )
@@ -48,6 +50,10 @@
     static NetworkEndPoint_t xEndPoints[ 4 ];
 
 #endif /* defined( ipconfigIPv4_BACKWARD_COMPATIBLE ) && ( ipconfigIPv4_BACKWARD_COMPATIBLE == 0 ) */
+
+/*-----------------------------------------------------------*/
+
+extern UBaseType_t uxRand();
 
 /*-----------------------------------------------------------*/
 
@@ -209,6 +215,8 @@ void vPlatformInitIpStack( void )
                                                                             NetworkInterface_t * pxInterface );
             pxLibslirp_FillInterfaceDescriptor( 0, &( xInterfaces[ 0 ] ) );
         #else
+            extern NetworkInterface_t * pxWinPcap_FillInterfaceDescriptor( BaseType_t xEMACIndex,
+                                                                           NetworkInterface_t * pxInterface );
             pxWinPcap_FillInterfaceDescriptor( 0, &( xInterfaces[ 0 ] ) );
         #endif
 
@@ -220,7 +228,7 @@ void vPlatformInitIpStack( void )
             xEndPoints[ 0 ].bits.bWantDHCP = pdTRUE;
         }
         #endif /* ( ipconfigUSE_DHCP != 0 ) */
-        memcpy( ipLOCAL_MAC_ADDRESS, ucMACAddress, sizeof( ucMACAddress ) );
+
         xResult = FreeRTOS_IPInit_Multi();
     #else /* if defined( ipconfigIPv4_BACKWARD_COMPATIBLE ) && ( ipconfigIPv4_BACKWARD_COMPATIBLE == 0 ) */
         /* Using the old /single /IPv4 library, or using backward compatible mode of the new /multi library. */

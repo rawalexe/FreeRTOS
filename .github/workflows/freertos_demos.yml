@@ -24,7 +24,7 @@ jobs:
           stepName: Checkout Repository
         name: ${{ env.stepName }}
         uses: actions/checkout@v3
-          
+
       - env:
           stepName: Fetch Required Submodule
         name: ${{ env.stepName }}
@@ -62,7 +62,8 @@ jobs:
           $content = Get-Content -Path 'main.c' -Raw
           $newContent = $content -replace 'int\s+main(.*?)void(.*?)\r?\n\s*{', 'int main( void ){setvbuf( stdout, NULL, _IONBF, 0 );'
           $newContent | Set-Content -Path 'main.c'
-          msbuild WIN32.sln -t:rebuild
+          msbuild WIN32.sln /p:Platform=Win32 -t:rebuild
+          msbuild WIN32.sln /p:Platform=x64 -t:rebuild
           $exitStatus = $?
           echo "::endgroup::"
           if($exitStatus -eq 1) {
@@ -73,11 +74,21 @@ jobs:
           }
 
       - env:
-          stepName: Run and monitor WIN32-MSVC Full Demo
+          stepName: Run and monitor WIN32-MSVC Full Demo - Win32
         name: ${{ env.stepName }}
         uses: FreeRTOS/CI-CD-GitHub-Actions/executable-monitor@main
         with:
-          exe-path: FreeRTOS/Demo/WIN32-MSVC/Debug/RTOSDemo.exe
+          exe-path: FreeRTOS/Demo/WIN32-MSVC/Win32/Debug/RTOSDemo.exe
+          timeout-seconds: 60
+          success-line: "No errors - tick count"
+          retry-attempts: 3
+
+      - env:
+          stepName: Run and monitor WIN32-MSVC Full Demo - x64
+        name: ${{ env.stepName }}
+        uses: FreeRTOS/CI-CD-GitHub-Actions/executable-monitor@main
+        with:
+          exe-path: FreeRTOS/Demo/WIN32-MSVC/x64/Debug/RTOSDemo.exe
           timeout-seconds: 60
           success-line: "No errors - tick count"
           retry-attempts: 3
@@ -93,7 +104,8 @@ jobs:
           $content = Get-Content -Path 'main.c' -Raw
           $newContent = $content -replace '#define\s+mainCREATE_SIMPLE_BLINKY_DEMO_ONLY\s+0', '#define mainCREATE_SIMPLE_BLINKY_DEMO_ONLY    1'
           $newContent | Set-Content -Path 'main.c'
-          msbuild WIN32.sln -t:rebuild
+          msbuild WIN32.sln /p:Platform=Win32 -t:rebuild
+          msbuild WIN32.sln /p:Platform=x64 -t:rebuild
           echo "::endgroup::"
           $exitStatus = $?
           if($exitStatus -eq 1) {
@@ -104,11 +116,21 @@ jobs:
           }
 
       - env:
-          stepName: Run and monitor WIN32-MSVC Blinky Demo
+          stepName: Run and monitor WIN32-MSVC Blinky Demo - Win32
         name: ${{ env.stepName }}
         uses: FreeRTOS/CI-CD-GitHub-Actions/executable-monitor@main
         with:
-            exe-path: FreeRTOS/Demo/WIN32-MSVC/Debug/RTOSDemo.exe
+            exe-path: FreeRTOS/Demo/WIN32-MSVC/Win32/Debug/RTOSDemo.exe
+            timeout-seconds: 60
+            success-line: "Message received from software timer"
+            retry-attempts: 3
+
+      - env:
+          stepName: Run and monitor WIN32-MSVC Blinky Demo - x64
+        name: ${{ env.stepName }}
+        uses: FreeRTOS/CI-CD-GitHub-Actions/executable-monitor@main
+        with:
+            exe-path: FreeRTOS/Demo/WIN32-MSVC/x64/Debug/RTOSDemo.exe
             timeout-seconds: 60
             success-line: "Message received from software timer"
             retry-attempts: 3
@@ -384,8 +406,12 @@ jobs:
               # ${{ env.stepName }}
               echo -e "::group::${{ env.stepName }}"
               set +e
-              sudo apt-get -y update
-              sudo apt-get -y install gcc-msp430 build-essential
+              curl -L -O https://dr-download.ti.com/software-development/ide-configuration-compiler-or-debugger/MD-LlCjWuAbzH/9.3.1.2/msp430-gcc-full-linux-x64-installer-9.3.1.2.7z
+              sudo apt update -y
+              sudo apt install -y p7zip-full
+              7z x ./msp430-gcc-full-linux-x64-installer-9.3.1.2.7z
+              chmod +x ./msp430-gcc-full-linux-x64-installer-9.3.1.2.run
+              sudo ./msp430-gcc-full-linux-x64-installer-9.3.1.2.run --prefix /usr/bin/msp430-gcc --mode unattended
               exitStatus=$?
               set -e
               echo -e "::endgroup::"
@@ -405,7 +431,7 @@ jobs:
               # ${{ env.stepName }}
               echo -e "::group::${{ env.stepName }}"
               set +e
-              make -j
+              make -j  CC=/usr/bin/msp430-gcc/bin/msp430-elf-gcc OPT="-Os -I/usr/bin/msp430-gcc/include -L/usr/bin/msp430-gcc/include"
               exitStatus=$?
               set -e
               echo -e "::endgroup::"
@@ -433,7 +459,7 @@ jobs:
           # ${{ env.stepName }}
           echo -e "::group::${{ env.stepName }}"
           set +e
-          git submodule update --checkout --init --depth 1 FreeRTOS/Source FreeRTOS/Demo/ThirdParty/Community-Supported-Demos
+          git submodule update --checkout --init --depth 1 FreeRTOS/Source FreeRTOS/Demo/ThirdParty/Community-Supported-Demos FreeRTOS-Plus/Source/FreeRTOS-Plus-Trace
           exitStatus=$?
           set -e
           echo -e "::endgroup::"
@@ -454,7 +480,7 @@ jobs:
           set +e
           sudo apt-get -y update
           sudo apt-get -y install gcc-arm-none-eabi build-essential cmake git ninja-build python3-minimal
-          sudo apt-get -y install qemu-system-arm qemu-efi
+          sudo apt-get -y install qemu-system-arm qemu-efi-arm
           exitStatus=$?
           set -e
           echo -e "::endgroup::"

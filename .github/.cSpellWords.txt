@@ -1,4 +1,3 @@
-
 A
 AADLENR
 AAIC
@@ -100,7 +99,9 @@ AEEVT
 AEIE
 AERR
 AESCCM
+AESCE
 AESCMAC
+AESGCM
 AESNI
 AESR
 AFECR
@@ -307,6 +308,7 @@ BCTRL
 BCUT
 BDCR
 BDEV
+BDEVOPENMODE
 BDEVTEST
 BDEVTESTPARAM
 BDFA
@@ -323,6 +325,7 @@ BERR
 BESR
 BFAR
 BFARV
+BFARVALID
 BFHFNMIGN
 BFRX
 BFSR
@@ -430,6 +433,7 @@ BUFNA
 BUFWREN
 BUMEN
 BUSA
+BUSFAULTENA
 BUSFAULTSR
 BUSP
 BUSTKE
@@ -646,6 +650,7 @@ CLKPR
 CLKPS
 CLKRQ
 CLKS
+CLKSOURCE
 CLKSR
 CLKSTA
 CLKVCLR
@@ -719,6 +724,7 @@ CMock
 CNBTR
 CNDA
 CNDTR
+CNOT
 CNTALOAD
 CNTAMAX
 CNTBLOAD
@@ -761,6 +767,7 @@ CPCSTOP
 CPCTRG
 CPDI
 CPHA
+CPIEVTENA
 CPIN
 CPINREADY
 CPIV
@@ -862,6 +869,11 @@ CWTA
 CWTAVAL
 CWTIF
 CWUF
+CYCCNT
+CYCCNTENA
+CYCEVTENA
+CYCMATCH
+CYCTAP
 CYGNAL
 Cbmc
 Centralised
@@ -1491,7 +1503,9 @@ EWRL
 EWRX
 EWUP
 EXCC
+EXCEVTENA
 EXCOL
+EXCTRCENA
 EXDEF
 EXEDG
 EXID
@@ -1567,6 +1581,7 @@ FERR
 FESETERR
 FESR
 FFCR
+FFDH
 FFDHE
 FFDR
 FFER
@@ -1599,6 +1614,7 @@ FMULTCLK
 FMXR
 FNTR
 FNUM
+FOLDEVTENA
 FOLVA
 FOLVB
 FOOB
@@ -2116,6 +2132,7 @@ INVD
 INVI
 INVON
 INVPC
+Inited
 IOCE
 IOCF
 IOCLR
@@ -2233,6 +2250,7 @@ JKJKJKJK
 JKKKKKKK
 JNCH
 JOFR
+JPAKE
 JSQR
 JSWSTRT
 JTAG
@@ -2494,6 +2512,7 @@ MASKH
 MASKL
 MAXBLKL
 MAXFS
+MAXFSIZE
 MAXFSSIZE
 MAXMB
 MAXRTX
@@ -2568,6 +2587,7 @@ MDTX
 MEDEMSR
 MEM
 MEMA
+MEMFAULTENA
 MEMFAULTSR
 MEMP
 MERASE
@@ -2599,6 +2619,7 @@ MISRA
 MLAN
 MMAR
 MMARV
+MMARVALID
 MMCCR
 MMCIT
 MMCR
@@ -2860,6 +2881,7 @@ Nfontname
 Ngan
 Nios
 Nmap
+Nondet
 Npcap
 Nullpuc
 Nullpx
@@ -3251,6 +3273,7 @@ PRFTBS
 PRIA
 PRIS
 PRIVDEFEN
+PRIVDEFENA
 PRKLAST
 PRLH
 PRLL
@@ -3609,6 +3632,7 @@ RMEN
 RMII
 RMIIEN
 RMIIMII
+RMTAUTH
 RMTE
 RMTEN
 RMUTE
@@ -3987,6 +4011,8 @@ SECEV
 SECP
 SECU
 SEGGER
+SELEXTCLK
+SELEXTEN
 SENDA
 SEQR
 SESREQ
@@ -4042,6 +4068,8 @@ SLBDIS
 SLCKSEL
 SLCR
 SLCT
+SLEEPEVTENA
+SLEEPONEXIT
 SLEWCTL
 SLICEBY
 SLIPIF
@@ -4285,6 +4313,7 @@ SYBYPSR
 SYMM
 SYNCA
 SYNCB
+SYNCENA
 SYNCR
 SYNMAXRTX
 SYNSR
@@ -4522,6 +4551,7 @@ TRAPA
 TRARECLENGTH
 TRAS
 TRCD
+TRCENA
 TRCMD
 TRCMPAD
 TRCMPAU
@@ -4900,6 +4930,7 @@ USEND
 USEPWMDIV
 USEQ
 USGA
+USGFAULTENA
 USGFAULTSR
 USGTRGAF
 USGTRGAR
@@ -4963,6 +4994,8 @@ VDTO
 VECT
 VECTACTIVE
 VECTCLRACTIVE
+VECTKEY
+VECTKEYSTAT
 VECTPENDING
 VECTRESET
 VECTTBL
@@ -5012,6 +5045,7 @@ VRRSTEN
 VRRSTS
 VSDB
 VSYNC
+VTASKLIST
 VTIR
 VTOFFR
 VTOR
@@ -5138,6 +5172,7 @@ XADD
 XAPM
 XAXIPMON
 XBLANK
+XCALLBACK
 XCANPS
 XCOL
 XCOREAI
@@ -5270,6 +5305,7 @@ addif
 addiu
 adge
 aeevt
+aesce
 aesni
 alldevs
 ambig
@@ -5336,10 +5372,12 @@ coalescences
 codecov
 comms
 converttounixtime
+coreid
 coremqtt
 cortexa
 coverity
 covfs
+covg
 cpas
 cpbs
 cpcdis
@@ -5402,8 +5440,10 @@ enetrg
 epage
 epdisc
 eqcfg
+equalto
 equidistribution
 eret
+estack
 ethernetif
 etrgs
 evba
@@ -5581,6 +5621,7 @@ lpstart
 lpthread
 lptr
 lsls
+lteq
 ltorg
 ltry
 lums
@@ -5588,6 +5629,8 @@ lusecs
 lxip
 macaddrhr
 macaddrlr
+maes
+maxfsize
 maxiosz
 maxnpacks
 mbar
@@ -5637,6 +5680,7 @@ movne
 movs
 movw
 movx
+mpclmul
 mpcr
 mqdes
 mqttexample
@@ -5649,6 +5693,7 @@ mrsne
 mspgcc
 msplim
 msreq
+msse
 mstatus
 mstroff
 mtdr
@@ -5679,6 +5724,7 @@ noassert
 nocrypt
 noheap
 noint
+nondet
 nopts
 nostdint
 notifyzz
@@ -5858,6 +5904,7 @@ reti
 revsh
 rgmii
 riscv
+rmtauth
 rovr
 rsar
 rslcx
@@ -6008,6 +6055,7 @@ txrx
 u
 uadd
 uasx
+ubasetype
 ublock
 ublox
 uchars
@@ -6027,6 +6075,7 @@ unhashed
 unifdef
 uninitialised
 uninitializing
+unprecise
 unsubscriptions
 unsuspended
 unsuspends
@@ -6049,10 +6098,14 @@ utilising
 utrhf
 utrhfgdghfg
 ux
+uxdeletedtaskwaiting
 uxindex
+uxpriority
 uxsource
 uxtab
+uxtasknumber
 uxtb
+uxtopreadypriority
 vactive
 vblank
 vcmp
@@ -6120,6 +6173,7 @@ xfindobjectwithlabelandclass
 xfscompat
 xgetslotlist
 xheader
+xidx
 xinitializepkcs
 xlarge
 xlength

@@ -189,6 +189,7 @@ NetworkInterface_t * pxWinPcap_FillInterfaceDescriptor( BaseType_t xEMACIndex,
 
 int main( void )
 {
+    BaseType_t xReturn;
     const uint32_t ulLongTime_ms = pdMS_TO_TICKS( 1000UL );
 
     /*
@@ -314,7 +315,9 @@ int main( void )
     }
     #endif /* ( mainNETWORK_UP_COUNT >= 3U ) */
 
-    FreeRTOS_IPInit_Multi();
+    xReturn = FreeRTOS_IPInit_Multi();
+
+    configASSERT( xReturn == pdTRUE );
 
     /* Start the RTOS scheduler. */
     FreeRTOS_debug_printf( ( "vTaskStartScheduler\r\n" ) );
@@ -431,7 +434,6 @@ void vApplicationIPNetworkEventHook_Multi( eIPCallbackEvent_t eNetworkEvent,
 
         if( pxEndPoint->bits.bIPv6 == 0U )
         {
-            *ipLOCAL_IP_ADDRESS_POINTER = pxEndPoint->ipv4_settings.ulIPAddress;
             configPRINTF( ( "IPv4 address = %xip\n", FreeRTOS_ntohl( pxEndPoint->ipv4_settings.ulIPAddress ) ) );
         }
 
@@ -464,15 +466,6 @@ UBaseType_t uxRand( void )
 }
 /*-----------------------------------------------------------*/
 
-uint32_t uxRand32( void )
-{
-    /* uxRand only returns 15 random bits. Call it 3 times. */
-    uint32_t ul[ 3 ] = { uxRand(), uxRand(), uxRand() };
-    uint32_t uxReturn = ul[ 0 ] | ( ul[ 1 ] << 15 ) | ( ul[ 2 ] << 30 );
-
-    return uxReturn;
-}
-
 static void prvSRand( UBaseType_t ulSeed )
 {
     /* Utility function to seed the pseudo random number generator. */
@@ -483,6 +476,7 @@ static void prvSRand( UBaseType_t ulSeed )
 static void prvMiscInitialisation( void )
 {
     time_t xTimeNow;
+    uint32_t ulRandomNumbers[ 4 ];
     uint32_t ulLoggingIPAddress;
 
     ulLoggingIPAddress = FreeRTOS_inet_addr_quick( configECHO_SERVER_ADDR0, configECHO_SERVER_ADDR1, configECHO_SERVER_ADDR2, configECHO_SERVER_ADDR3 );
@@ -492,7 +486,16 @@ static void prvMiscInitialisation( void )
     time( &xTimeNow );
     FreeRTOS_debug_printf( ( "Seed for randomiser: %lu\r\n", xTimeNow ) );
     prvSRand( ( uint32_t ) xTimeNow );
-    FreeRTOS_debug_printf( ( "Random numbers: %08X %08X %08X %08X\r\n", ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32() ) );
+
+    ( void ) xApplicationGetRandomNumber( &ulRandomNumbers[ 0 ] );
+    ( void ) xApplicationGetRandomNumber( &ulRandomNumbers[ 1 ] );
+    ( void ) xApplicationGetRandomNumber( &ulRandomNumbers[ 2 ] );
+    ( void ) xApplicationGetRandomNumber( &ulRandomNumbers[ 3 ] );
+    FreeRTOS_debug_printf( ( "Random numbers: %08X %08X %08X %08X\n",
+                             ulRandomNumbers[ 0 ],
+                             ulRandomNumbers[ 1 ],
+                             ulRandomNumbers[ 2 ],
+                             ulRandomNumbers[ 3 ] ) );
 }
 /*-----------------------------------------------------------*/
 
@@ -637,12 +640,16 @@ extern uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress,
                                                     uint32_t ulDestinationAddress,
                                                     uint16_t usDestinationPort )
 {
+    uint32_t ulRandomNumber;
+
     ( void ) ulSourceAddress;
     ( void ) usSourcePort;
     ( void ) ulDestinationAddress;
     ( void ) usDestinationPort;
 
-    return uxRand32();
+    ( void ) xApplicationGetRandomNumber( &ulRandomNumber );
+
+    return ulRandomNumber;
 }
 /*-----------------------------------------------------------*/
 
@@ -930,34 +937,41 @@ static void vDNSEvent( const char * pcName,
 
 static void dns_test( const char * pcHostName )
 {
-    uint32_t ulID = uxRand32();
+    uint32_t ulID;
     BaseType_t rc;
 
-    FreeRTOS_dnsclear();
+    if( xApplicationGetRandomNumber( &( ulID ) ) != pdFALSE )
+    {
+        FreeRTOS_dnsclear();
 
-    struct freertos_addrinfo xHints;
-    struct freertos_addrinfo * pxResult = NULL;
+        struct freertos_addrinfo xHints;
+        struct freertos_addrinfo * pxResult = NULL;
 
-    memset( &xHints, 0, sizeof xHints );
-    xHints.ai_family = FREERTOS_AF_INET6;
+        memset( &xHints, 0, sizeof xHints );
+        xHints.ai_family = FREERTOS_AF_INET6;
 
-    rc = FreeRTOS_getaddrinfo( pcHostName, NULL, &xHints, &pxResult );
+        rc = FreeRTOS_getaddrinfo( pcHostName, NULL, &xHints, &pxResult );
 
-    FreeRTOS_printf( ( "Lookup '%s': %d\n", pcHostName, rc ) );
+        FreeRTOS_printf( ( "Lookup '%s': %d\n", pcHostName, rc ) );
 
-    FreeRTOS_dnsclear();
-    xDNSResult = -2;
-    rc = FreeRTOS_getaddrinfo_a( pcHostName,
-                                 NULL,
-                                 &xHints,
-                                 &pxResult, /* An allocated struct, containing the results. */
-                                 vDNSEvent,
-                                 ( void * ) ulID,
-                                 pdMS_TO_TICKS( 1000U ) );
-    vTaskDelay( pdMS_TO_TICKS( 1000U ) );
-    rc = xDNSResult;
-    FreeRTOS_printf( ( "Lookup '%s': %d\n", pcHostName, rc ) );
-    /*      FreeRTOS_gethostbyname( pcHostName ); */
+        FreeRTOS_dnsclear();
+        xDNSResult = -2;
+        rc = FreeRTOS_getaddrinfo_a( pcHostName,
+                                     NULL,
+                                     &xHints,
+                                     &pxResult, /* An allocated struct, containing the results. */
+                                     vDNSEvent,
+                                     ( void * ) ulID,
+                                     pdMS_TO_TICKS( 1000U ) );
+        vTaskDelay( pdMS_TO_TICKS( 1000U ) );
+        rc = xDNSResult;
+        FreeRTOS_printf( ( "Lookup '%s': %d\n", pcHostName, rc ) );
+        /*      FreeRTOS_gethostbyname( pcHostName ); */
+    }
+    else
+    {
+        FreeRTOS_printf( ( "dns_test: Failed to generate a random SearchID\n" ) );
+    }
 }
 
 void showAddressInfo( struct freertos_addrinfo * pxAddrInfo )

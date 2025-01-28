@@ -2,7 +2,7 @@ name: CI Checks
 
 env:
   bashPass: \033[32;1mPASSED -
-  bashWarn: \033[33;1mWARNING -
+  bashInfo: \033[33;1mINFO -
   bashFail: \033[31;1mFAILED -
   bashEnd:  \033[0m
 
@@ -81,7 +81,7 @@ jobs:
           # Therefore, we can just download it.
           mkdir -p freertos/FreeRTOS-Plus/Source/Application-Protocols/coreMQTT-Agent/source/dependency/coreMQTT/docs/doxygen/output
           wget -O freertos/FreeRTOS-Plus/Source/Application-Protocols/coreMQTT-Agent/source/dependency/coreMQTT/docs/doxygen/output/mqtt.tag \
-          "https://freertos.org/Documentation/api-ref/coreMQTT/docs/doxygen/output/mqtt.tag"
+          "https://freertos.github.io/coreMQTT/main/mqtt.tag"
 
       - name: Generate doxygen ZIP
         uses: FreeRTOS/CI-CD-Github-Actions/doxygen@main
@@ -90,11 +90,12 @@ jobs:
           # List of directories containing libraries whose doxygen output will be generated.
           libs_parent_dir_path: FreeRTOS-Plus/Source,FreeRTOS-Plus/Source/AWS,FreeRTOS-Plus/Source/Application-Protocols,FreeRTOS-Plus/Source/Utilities
           generate_zip: true
+          doxygen_dependencies: libclang-18-dev libclang-cpp18 graphviz
       - name: Upload doxygen artifact if main branch
         if: success() && ( github.ref == 'refs/heads/main' || github.ref == 'refs/heads/release-candidate' )
         env:
           GIT_SHA:
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: doxygen.zip-${{ github.sha }}
           path: ./freertos/doxygen.zip
@@ -144,29 +145,32 @@ jobs:
           Upload memory size report as artifact (for main and
           release-candidate ONLY)
         if: success() && ( github.ref == 'refs/heads/main' || github.ref == 'refs/heads/release-candidate' )
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: freertos-memory-estimates
           path: ./freertos_lts_memory_estimates.json
           retention-days: 2
 
   proof_ci:
-    if: ${{ github.event.pull_request }}
+    if: ${{ github.event.pull_request }} || ${{ github.event.workflow }}
     runs-on: cbmc_ubuntu-latest_16-core
     steps:
       - uses: actions/checkout@v3
       - env:
           stepName: Install Dependencies
         run: |
-          echo -e "::group::${{ env.stepName }}"
+          # ${{ env.stepName }}
+          echo -e "::group:: ${{ env.bashInfo }} ${{ env.stepName }} ${{ env.bashEnd }}"
           git submodule update --init --checkout --recursive --depth 1
-          sudo apt-get update
+          sudo apt-get update -y
           sudo apt-get install --yes --no-install-recommends gcc-multilib
           echo -e "::endgroup::"
           echo -e "${{ env.bashPass }} ${{env.stepName}} ${{ env.bashEnd }}"
 
       - name: Set up CBMC runner
         uses: FreeRTOS/CI-CD-Github-Actions/set_up_cbmc_runner@main
+        with:
+          cbmc_version: "5.95.1"
 
       - name: Run CBMC
         uses: FreeRTOS/CI-CD-Github-Actions/run_cbmc@main
